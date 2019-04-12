@@ -18,17 +18,25 @@ if sys.argv[2] not in ['AND','NOT']:
 
 ###---------function: read the star file get the header, labels, and data -------------#######
 def read_starfile(f):
+    inhead = True
     alldata = open(f,'r').readlines()
     labelsdic = {}
     data = []
     header = []
+    count = 0
+    labcount = 0
     for i in alldata:
-        if '#' in i:
-            labelsdic[i.split('#')[0]] = int(i.split('#')[1])-1
-        if len(i.split()) > 3:
-            data.append(i.split())
-        if len(i.split()) < 3:
+        if '_rln' in i and '#' in i:
+            labelsdic[i.split('#')[0]] = labcount
+            labcount+=1
+        if inhead == True:
             header.append(i.strip("\n"))
+            if '_rln' in i and '#' in i and  '_rln' not in alldata[count+1] and '#' not in alldata[count+1]:
+                inhead = False
+        elif len(i.split())>=1:
+            data.append(i.split())
+        count +=1
+    
     return(labelsdic,header,data)
 #---------------------------------------------------------------------------------------------#
 
@@ -67,20 +75,21 @@ if write_output_file == 'AND':
 	output = open(outputfile,'w')
 	for i in thishead[1]:
 		output.write('{0}\n'.format(i))
-	n = 0
+	d1list = []
 	for i in data1:
+		d1list.append(i[labels1['_rlnImageName ']])
+	overlap = set(d1list).intersection(parts2)			
+	for i in overlap:		
 		line = []
-		if i[labels1['_rlnImageName ']] in parts2:
-			n+=1
-			for j in thishead[1]:
-				if '#' in j:
-					jsplit = j.split('#')
-					line.append(i[labels1[jsplit[0]]])
+		for j in thishead[1]:
+			if '#' in j:
+				jsplit = j.split('#')
+				line.append(i[labels1[jsplit[0]]])
 		if len(line) > 1:
 			output.write('\n{0}'.format('   '.join(line)))
 	
-	print '{0} particles in common'.format(n)
-	if n > 0.25*len(parts1):
+	print '{0} particles in common'.format(len(overlap))
+	if len(overlap) > 0.25*len(parts1):
 		print "Much particles So overlap. Wow."
 
 if write_output_file == 'NOT':
@@ -88,17 +97,18 @@ if write_output_file == 'NOT':
 	output = open(outputfile,'w')
 	for i in thishead[1]:
 		output.write('{0}\n'.format(i))
-	n = 0
+	d1list = []
 	for i in data1:
+		d1list.append(i[labels1['_rlnImageName ']])
+	overlap = set(d1list).difference(parts2)			
+	for i in overlap:		
 		line = []
-		if i[labels1['_rlnImageName ']] not in parts2:
-			n+=1
-			for j in thishead[1]:
-				if '#' in j:
-					jsplit = j.split('#')
-					line.append(i[labels1[jsplit[0]]])
+		for j in thishead[1]:
+			if '#' in j:
+				jsplit = j.split('#')
+				line.append(i[labels1[jsplit[0]]])
 		if len(line) > 1:
 			output.write('\n{0}'.format('   '.join(line)))
 	
 		
-	print '{0} particles'.format(n)
+	print '{0} particles'.format(len(overlap))
