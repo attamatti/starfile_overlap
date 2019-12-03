@@ -82,7 +82,7 @@ if write_output_file == 'AND':
 	for i in overlap:		
 		line = []
 		for j in thishead[1]:
-			if '#' in j:
+			if '_rln' in j and '#' in j:
 				jsplit = j.split('#')
 				line.append(i[labels1[jsplit[0]]])
 		if len(line) > 1:
@@ -104,7 +104,7 @@ if write_output_file == 'NOT':
 	for i in overlap:		
 		line = []
 		for j in thishead[1]:
-			if '#' in j:
+			if '_rln' in j and '#' in j:
 				jsplit = j.split('#')
 				line.append(i[labels1[jsplit[0]]])
 		if len(line) > 1:
