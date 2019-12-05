@@ -44,15 +44,15 @@ def read_starfile(f):
 files = (sys.argv[1],sys.argv[3])
 write_output_file = sys.argv[2]
 (labels1,header1,data1) = read_starfile(files[0])
-parts1 = []
+parts1 = {}		# {imagename"[line1,line2,line3]}
 for i in data1:
-    parts1.append(i[labels1['_rlnImageName ']])
+	parts1[i[labels1['_rlnImageName ']]] = i
 
 
 (labels2,header2,data2) = read_starfile(files[1])
-parts2 = []
+parts2 = {}		# {imagename"[line1,line2,line3]}
 for i in data2:
-    parts2.append(i[labels2['_rlnImageName ']])
+    parts2[i[labels2['_rlnImageName ']]] = i
 
 
 
@@ -69,22 +69,24 @@ if len(header1) != len(header2):
 		if i not in thishead[2]:
 			print i
 
+print('{0} Particles in {1}'.format(len(parts1),sys.argv[1]))
+print('{0} Particles in {1}'.format(len(parts2),sys.argv[3]))
 
 if write_output_file == 'AND':
 	outputfile = 'staroverlap_AND.star'
 	output = open(outputfile,'w')
 	for i in thishead[1]:
 		output.write('{0}\n'.format(i))
-	d1list = []
-	for i in data1:
-		d1list.append(i[labels1['_rlnImageName ']])
-	overlap = set(d1list).intersection(parts2)			
+	# d1list = []
+	# for i in data1:
+	# 	d1list.append(i[labels1['_rlnImageName ']])
+	overlap = set(list(parts1)).intersection(list(parts2))			
 	for i in overlap:		
 		line = []
 		for j in thishead[1]:
 			if '_rln' in j and '#' in j:
 				jsplit = j.split('#')
-				line.append(i[labels1[jsplit[0]]])
+				line.append(parts1[i][labels1[jsplit[0]]])
 		if len(line) > 1:
 			output.write('\n{0}'.format('   '.join(line)))
 	
@@ -97,18 +99,15 @@ if write_output_file == 'NOT':
 	output = open(outputfile,'w')
 	for i in thishead[1]:
 		output.write('{0}\n'.format(i))
-	d1list = []
-	for i in data1:
-		d1list.append(i[labels1['_rlnImageName ']])
-	overlap = set(d1list).difference(parts2)			
+	overlap = set(list(parts1)).difference(list(parts2))			
 	for i in overlap:		
 		line = []
 		for j in thishead[1]:
 			if '_rln' in j and '#' in j:
 				jsplit = j.split('#')
-				line.append(i[labels1[jsplit[0]]])
+				line.append(parts1[i][labels1[jsplit[0]]])
 		if len(line) > 1:
 			output.write('\n{0}'.format('   '.join(line)))
 	
 		
-	print '{0} particles'.format(len(overlap))
+	print '{0} particles in {1} NOT in {2}'.format(len(overlap),sys.argv[1],sys.argv[3])
